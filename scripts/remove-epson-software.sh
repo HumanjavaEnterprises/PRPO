@@ -33,6 +33,7 @@ for p in \
   "/Library/Application Support/Epson" \
   "/Library/Application Support/epson" \
   "/Library/Caches/com.epson."* \
+  "/Library/Preferences/com.epson."* \
   "/Library/Printers/EPSON/InkjetPrinter2/Utilities" \
   /Library/LaunchAgents/*epson* \
   /Library/LaunchAgents/*Epson* \
