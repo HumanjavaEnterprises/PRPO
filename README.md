@@ -21,8 +21,8 @@ the rest.
 | Piece | What it does |
 |---|---|
 | `epson-ink-check` | Reads ink levels over IPP; notifies when any cartridge is low. Pure `ipptool` + `osascript`. |
-| `prpo` | Small control CLI — `status`, `check`, `menubar on/off`, `scan`. |
-| `prpo-scan` | Driverless flatbed → PDF via eSCL. No Epson software. |
+| `PRPO` | Small control CLI — `status`, `check`, `menubar on/off`, `scan`. |
+| `PRPO-scan` | Driverless flatbed → PDF via eSCL. No Epson software. |
 | **PrestoReverso.app** | Optional native menu-bar indicator (Swift/Cocoa, `LSUIElement`). Toggle any time. |
 | `scripts/remove-epson-software.sh` | Removes the Epson app suite to go fully native (keeps printing + scanning working). |
 
@@ -32,8 +32,8 @@ Everything is arm64-native and dependency-free (system `ipptool`, `curl`,
 ## Install
 
 ```sh
-git clone https://github.com/HumanjavaEnterprises/presto-reverso-print-o.git
-cd presto-reverso-print-o
+git clone https://github.com/HumanjavaEnterprises/PRPO.git
+cd PRPO
 sh scripts/install.sh
 ```
 
@@ -44,10 +44,10 @@ Make sure `~/.local/bin` is on your `PATH`.
 ## Use
 
 ```sh
-prpo status          # ink readout right now
-prpo menubar on      # show the menu-bar indicator (off by default)
-prpo menubar off     # hide it
-prpo scan out.pdf    # driverless flatbed scan
+PRPO status          # ink readout right now
+PRPO menubar on      # show the menu-bar indicator (off by default)
+PRPO menubar off     # hide it
+PRPO scan out.pdf    # driverless flatbed scan
 ```
 
 Example readout:
@@ -88,7 +88,7 @@ export EPSON_IPP_URI="ipps://YOUR-PRINTER.local:631/ipp/print"
 ```
 
 Any Epson that reports `marker-levels` over IPP works for ink monitoring; any
-that answers `/eSCL/ScannerCapabilities` works for `prpo scan`.
+that answers `/eSCL/ScannerCapabilities` works for `PRPO scan`.
 
 ## License
 

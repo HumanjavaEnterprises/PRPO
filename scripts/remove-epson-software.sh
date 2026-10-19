@@ -12,7 +12,7 @@
 #
 # What this KEEPS (so nothing breaks):
 #   - your CUPS print queue (keeps printing via AirPrint/IPP)
-#   - native driverless scanning via eSCL/AirScan (Image Capture, Preview, prpo scan)
+#   - native driverless scanning via eSCL/AirScan (Image Capture, Preview, PRPO scan)
 #
 # It is safe to re-run; missing items are skipped.
 
@@ -55,4 +55,4 @@ for p in \
   if [ -e "$p" ]; then rm -rf "$p" && say "removed $p"; fi
 done
 
-echo "==> done. Printing stays via AirPrint; scan with Image Capture / 'prpo scan'."
+echo "==> done. Printing stays via AirPrint; scan with Image Capture / 'PRPO scan'."

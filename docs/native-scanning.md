@@ -17,13 +17,13 @@ If the scanner doesn't appear, add it in Printers & Scanners; macOS selects the
 ## Scan from the command line
 
 ```
-prpo scan                      # flatbed -> ~/Desktop/scan-<timestamp>.pdf
-prpo scan ~/Documents/x.pdf    # choose the output path
-PRPO_SCAN_DPI=600 prpo scan    # change resolution
-PRPO_SCAN_COLOR=Grayscale8 prpo scan
+PRPO scan                      # flatbed -> ~/Desktop/scan-<timestamp>.pdf
+PRPO scan ~/Documents/x.pdf    # choose the output path
+PRPO_SCAN_DPI=600 PRPO scan    # change resolution
+PRPO_SCAN_COLOR=Grayscale8 PRPO scan
 ```
 
-`prpo scan` talks straight to the printer's eSCL endpoint
+`PRPO scan` talks straight to the printer's eSCL endpoint
 (`https://<printer>/eSCL/ScanJobs`) — the same protocol the system apps use.
 
 ## What the device advertises (WF-3820, example)
