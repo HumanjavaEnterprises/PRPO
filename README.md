@@ -2,6 +2,8 @@
 
 **Run your Epson printer/scanner natively on Apple-silicon macOS — and bin the Intel-era bloatware.**
 
+Native ink monitor · menu-bar indicator · driverless scan. No Epson software, no Homebrew, no telemetry.
+
 macOS now warns that bundled vendor apps built for Intel "will not work with a
 future release of macOS." For Epson all-in-ones, the worst offender is the
 **Epson Low Ink Reminder** — a tiny background app that, on inspection, is still
