@@ -14,7 +14,6 @@
 # Printer selection order:
 #   1. $EPSON_IPP_URI if set
 #   2. first Epson queue found in `lpstat -v` (ipps:// preferred)
-#   3. Bonjour discovery of an _ipp._tcp Epson on the LAN
 
 find_uri() {
   if [ -n "$EPSON_IPP_URI" ]; then
