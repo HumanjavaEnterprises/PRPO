@@ -1,6 +1,57 @@
+# ---- macOS ----
 .DS_Store
-*.log
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+
+# ---- AI assistant / agent files (never publish these) ----
+CLAUDE.md
+CLAUDE.local.md
+GEMINI.md
+AGENTS.md
+.claude/
+.cursor/
+.cursorrules
+.cursorignore
+.windsurf/
+.windsurfrules
+.aider*
+.continue/
+.github/copilot-instructions.md
+
+# ---- editors / IDEs ----
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.netrwhist
+
+# ---- secrets / env ----
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.keystore
+id_rsa*
+.netrc
+secrets.*
+*.secret
+
+# ---- build artifacts ----
 build/
+DerivedData/
 *.o
+*.dSYM/
 PrestoReverso
 *.app/
+
+# ---- logs / scratch / temp ----
+*.log
+*.tmp
+tmp/
+scratch/
