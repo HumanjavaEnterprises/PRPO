@@ -23,13 +23,13 @@ rm -rf "$tmp"
 codesign --force -s - "$APP" >/dev/null 2>&1 || true
 
 echo "==> installing launch agents"
-for a in com.vveerrgg.prpo.inkcheck com.vveerrgg.prpo.menubar; do
+for a in com.humanjava.prpo.inkcheck com.humanjava.prpo.menubar; do
   sed "s#__HOME__#$HOME#g" "$REPO/launchd/$a.plist" > "$AGENTS/$a.plist"
 done
 
 echo "==> enabling the low-ink checker (at login + every 6h)"
-launchctl bootout "gui/$(id -u)/com.vveerrgg.prpo.inkcheck" 2>/dev/null || true
-launchctl bootstrap "gui/$(id -u)" "$AGENTS/com.vveerrgg.prpo.inkcheck.plist"
+launchctl bootout "gui/$(id -u)/com.humanjava.prpo.inkcheck" 2>/dev/null || true
+launchctl bootstrap "gui/$(id -u)" "$AGENTS/com.humanjava.prpo.inkcheck.plist"
 
 case ":$PATH:" in *":$BIN:"*) PATHOK=1 ;; *) PATHOK=0 ;; esac
 

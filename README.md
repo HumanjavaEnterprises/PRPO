@@ -32,7 +32,7 @@ Everything is arm64-native and dependency-free (system `ipptool`, `curl`,
 ## Install
 
 ```sh
-git clone https://github.com/vveerrgg/presto-reverso-print-o.git
+git clone https://github.com/HumanjavaEnterprises/presto-reverso-print-o.git
 cd presto-reverso-print-o
 sh scripts/install.sh
 ```

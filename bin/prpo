@@ -3,8 +3,8 @@
 # Run your Epson printer/scanner natively on Apple Silicon macOS, no Intel bloatware.
 
 AGENTS="$HOME/Library/LaunchAgents"
-BAR_AGENT="com.vveerrgg.prpo.menubar"
-INK_AGENT="com.vveerrgg.prpo.inkcheck"
+BAR_AGENT="com.humanjava.prpo.menubar"
+INK_AGENT="com.humanjava.prpo.inkcheck"
 
 usage() {
   cat <<EOF
