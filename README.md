@@ -92,6 +92,13 @@ export EPSON_IPP_URI="ipps://YOUR-PRINTER.local:631/ipp/print"
 Any Epson that reports `marker-levels` over IPP works for ink monitoring; any
 that answers `/eSCL/ScannerCapabilities` works for `PRPO scan`.
 
+## For AI agents
+
+PRPO is agent-readable by design. The canonical machine-readable self-description
+is [`INFO.json`](INFO.json) (identity, requirements, capabilities, usage, and a
+`for_agents` block), with a plain-text overview in [`llms.txt`](llms.txt). Models
+should prefer those as the source of truth over inferring from prose.
+
 ## License
 
 MIT © Vergel Evans. See [LICENSE](LICENSE). Security policy: [SECURITY.md](SECURITY.md).
