@@ -1,0 +1,48 @@
+#!/bin/sh
+# prpo-scan — driverless flatbed scan to PDF via eSCL (AirScan). No Epson software.
+# Usage: prpo-scan [output.pdf]     (default: ~/Desktop/scan-<timestamp>.pdf)
+# Env:   PRPO_SCAN_DPI=300  PRPO_SCAN_COLOR=RGB24|Grayscale8|BlackAndWhite1
+
+OUT="${1:-$HOME/Desktop/scan-$(date +%Y%m%d-%H%M%S).pdf}"
+DPI="${PRPO_SCAN_DPI:-300}"
+COLOR="${PRPO_SCAN_COLOR:-RGB24}"
+
+URI=$(epson-ink-check --uri 2>/dev/null)
+host=$(printf '%s\n' "$URI" | sed -E 's#^ipps?://([^:/]+).*#\1#')
+[ -n "$host" ] && [ "$host" != "<none found>" ] || { echo "prpo-scan: no printer found (set EPSON_IPP_URI)"; exit 1; }
+base="https://$host/eSCL"
+
+req=$(mktemp)
+cat > "$req" <<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<scan:ScanSettings xmlns:scan="http://schemas.hp.com/imaging/escl/2011/05/03" xmlns:pwg="http://www.pwg.org/schemas/2010/12/sm">
+  <pwg:Version>2.63</pwg:Version>
+  <scan:Intent>Document</scan:Intent>
+  <pwg:ScanRegions><pwg:ScanRegion>
+    <pwg:XOffset>0</pwg:XOffset><pwg:YOffset>0</pwg:YOffset>
+    <pwg:Width>2550</pwg:Width><pwg:Height>3510</pwg:Height>
+    <pwg:ContentRegionUnits>escl:ThreeHundredthsOfInches</pwg:ContentRegionUnits>
+  </pwg:ScanRegion></pwg:ScanRegions>
+  <scan:InputSource>Platen</scan:InputSource>
+  <scan:ColorMode>$COLOR</scan:ColorMode>
+  <scan:XResolution>$DPI</scan:XResolution><scan:YResolution>$DPI</scan:YResolution>
+  <pwg:DocumentFormat>application/pdf</pwg:DocumentFormat>
+</scan:ScanSettings>
+XML
+
+echo "prpo-scan: flatbed ${DPI}dpi ${COLOR} -> $OUT"
+loc=$(curl -sk -D - -o /dev/null --max-time 20 -X POST \
+        -H "Content-Type: text/xml" --data-binary @"$req" "$base/ScanJobs" 2>/dev/null \
+        | tr -d '\r' | awk -F': ' 'tolower($1)=="location"{print $2}')
+rm -f "$req"
+[ -n "$loc" ] || { echo "prpo-scan: scanner busy or unreachable"; exit 1; }
+
+code=$(curl -sk -o "$OUT" -w "%{http_code}" --max-time 120 "$loc/NextDocument" 2>/dev/null)
+curl -sk -X DELETE --max-time 10 "$loc" >/dev/null 2>&1
+
+if [ "$code" = 200 ] && [ -s "$OUT" ]; then
+  echo "prpo-scan: saved $OUT"
+  open "$OUT" 2>/dev/null
+else
+  echo "prpo-scan: failed (HTTP $code)"; rm -f "$OUT"; exit 1
+fi

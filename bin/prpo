@@ -1,0 +1,44 @@
+#!/bin/sh
+# prpo — Presto-Reverso-Print-O control CLI.
+# Run your Epson printer/scanner natively on Apple Silicon macOS, no Intel bloatware.
+
+AGENTS="$HOME/Library/LaunchAgents"
+BAR_AGENT="com.vveerrgg.prpo.menubar"
+INK_AGENT="com.vveerrgg.prpo.inkcheck"
+
+usage() {
+  cat <<EOF
+presto-reverso-print-o (prpo) $(prpo_version)
+
+  prpo status             show current ink levels
+  prpo check              run the low-ink check now (notifies if low)
+  prpo menubar on|off     enable/disable the menu-bar indicator
+  prpo menubar status     is the indicator running?
+  prpo scan [file.pdf]    scan the flatbed to PDF via driverless eSCL
+  prpo version
+
+Printer is auto-detected; override with EPSON_IPP_URI=ipps://host:631/ipp/print
+EOF
+}
+
+prpo_version() { echo "0.1.0"; }
+
+bar_on()  { launchctl bootstrap "gui/$(id -u)" "$AGENTS/$BAR_AGENT.plist" 2>/dev/null \
+              || launchctl load "$AGENTS/$BAR_AGENT.plist" 2>/dev/null; echo "menu-bar indicator: on"; }
+bar_off() { launchctl bootout "gui/$(id -u)/$BAR_AGENT" 2>/dev/null \
+              || launchctl unload "$AGENTS/$BAR_AGENT.plist" 2>/dev/null; echo "menu-bar indicator: off"; }
+
+case "$1" in
+  status)  epson-ink-check --show ;;
+  check)   epson-ink-check ;;
+  menubar)
+    case "$2" in
+      on)     bar_on ;;
+      off)    bar_off ;;
+      status) launchctl list 2>/dev/null | grep -q "$BAR_AGENT" && echo "running" || echo "stopped" ;;
+      *)      echo "usage: prpo menubar on|off|status" ;;
+    esac ;;
+  scan)            prpo-scan "$2" ;;
+  version|-v|--version) prpo_version ;;
+  *)               usage ;;
+esac

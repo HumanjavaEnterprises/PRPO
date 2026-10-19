@@ -1,0 +1,103 @@
+#!/bin/sh
+# epson-ink-check — native replacement for the Intel-only "Epson Low Ink Reminder".
+#
+# Reads ink (marker) levels straight from the printer over IPP and posts a
+# macOS notification when any cartridge is at or below its low threshold.
+# No Epson software required; pure ipptool + osascript, universal/arm64.
+#
+# Usage:
+#   epson-ink-check            notify only if an ink is low (used by launchd)
+#   epson-ink-check --quiet    same, but never prints to stdout
+#   epson-ink-check --show     print a full readout, no notification
+#   epson-ink-check --uri      print the printer URI it would use, then exit
+#
+# Printer selection order:
+#   1. $EPSON_IPP_URI if set
+#   2. first Epson queue found in `lpstat -v` (ipps:// preferred)
+#   3. Bonjour discovery of an _ipp._tcp Epson on the LAN
+
+find_uri() {
+  if [ -n "$EPSON_IPP_URI" ]; then
+    printf '%s\n' "$EPSON_IPP_URI"; return 0
+  fi
+  # configured CUPS queues (ipps preferred over ipp)
+  uri=$(lpstat -v 2>/dev/null | awk '
+    /device for/ {
+      line=$0; dev=$NF;
+      if (tolower(line) ~ /epson/) {
+        if (dev ~ /^ipps:/) { print dev; exit }
+        if (dev ~ /^ipp:/ && best=="") best=dev;
+      }
+    }
+    END { if (best!="") print best }')
+  if [ -n "$uri" ]; then printf '%s\n' "$uri"; return 0; fi
+  # No Epson IPP queue found. Set EPSON_IPP_URI to point at the device directly.
+  return 1
+}
+
+URI=$(find_uri)
+[ "$1" = "--uri" ] && { printf '%s\n' "${URI:-<none found>}"; exit 0; }
+
+MODE="notify"
+case "$1" in
+  --show)  MODE="show" ;;
+  --quiet) MODE="quiet" ;;
+esac
+
+if [ -z "$URI" ]; then
+  [ "$MODE" = "show" ] && echo "epson-ink-check: no Epson printer found (set EPSON_IPP_URI)"
+  exit 0
+fi
+
+req=$(mktemp)
+cat > "$req" <<'IPP'
+{
+  OPERATION Get-Printer-Attributes
+  GROUP operation-attributes-tag
+  ATTR charset attributes-charset utf-8
+  ATTR naturalLanguage attributes-natural-language en
+  ATTR uri printer-uri $uri
+  ATTR keyword requested-attributes marker-names,marker-levels,marker-low-levels
+}
+IPP
+out=$(ipptool -tv "$URI" "$req" 2>/dev/null)
+rm -f "$req"
+
+names=$(printf '%s\n'  "$out" | sed -n 's/.*marker-names (1setOf nameWithoutLanguage) = //p')
+levels=$(printf '%s\n' "$out" | sed -n 's/.*marker-levels (1setOf integer) = //p')
+lows=$(printf '%s\n'   "$out" | sed -n 's/.*marker-low-levels (1setOf integer) = //p')
+
+if [ -z "$levels" ]; then
+  [ "$MODE" = "show" ] && echo "epson-ink-check: printer unreachable ($URI)"
+  exit 0
+fi
+
+res=$(awk -v n="$names" -v l="$levels" -v lo="$lows" '
+BEGIN{
+  ni=split(n,N,","); split(l,L,","); split(lo,LO,",");
+  low="";
+  for(i=1;i<=ni;i++){
+    name=N[i]; sub(/^ +/,"",name); sub(/ +$/,"",name);
+    lvl=L[i]+0; thr=LO[i]+0; if(thr==0) thr=15;
+    flag=(lvl<=thr)?"  <-- LOW":"";
+    printf "TABLE %-12s %3d%%  (low at %d%%)%s\n", name, lvl, thr, flag;
+    if(lvl<=thr) low=low (low==""?"":", ") name " " lvl "%";
+  }
+  if(low=="") print "STATUS OK"; else print "STATUS LOW|" low;
+}')
+
+table=$(printf '%s\n' "$res" | sed -n 's/^TABLE //p')
+status=$(printf '%s\n' "$res" | sed -n 's/^STATUS //p')
+lowlist=$(printf '%s\n' "$status" | sed -n 's/^LOW|//p')
+
+if [ "$MODE" = "show" ]; then
+  echo "Epson ink levels  ($URI)"
+  printf '%s\n' "$table"
+  [ -n "$lowlist" ] && echo "LOW: $lowlist" || echo "All inks OK."
+  exit 0
+fi
+
+if [ -n "$lowlist" ]; then
+  osascript -e "display notification \"$lowlist\" with title \"Epson — ink low\" subtitle \"Time to reorder\"" >/dev/null 2>&1
+fi
+exit 0
